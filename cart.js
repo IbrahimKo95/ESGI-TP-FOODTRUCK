@@ -1,12 +1,15 @@
 import {showConfirm, showToast} from "./globalFunction.js";
 import {Cart} from "./class/Cart.js";
 import {OrderHistory} from "./class/OrderHistory.js";
+import {Payment} from "./class/Payment.js";
+
 
 const cartItems = document.getElementById('cartItems');
 const totalPrice = document.getElementById('totalPrice');
 const totalHT = document.getElementById('totalHT');
 const confirmButton = document.getElementById('confirmButton');
 const orderHistory = document.getElementById('orderHistory');
+const clearCartButton = document.getElementById('clearCartButton');
 
 function loadCart() {
     const cart = Cart.getItems()
@@ -55,27 +58,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
 confirmButton.addEventListener('click', confirmCart);
 
-function confirmCart() {
-    const cart = localStorage.getItem('cart');
-    if (cart) {
-        showConfirm('Êtes-vous sûr de vouloir valider votre panier ?').then((confirmed) => {
-            if (confirmed) {
-                if( countOrderInPreparation() <= 5) {
-                    addOnHistory();
-                    Cart.clearCart();
-                    cartItems.innerHTML = '<p class="text-green-600 font-semibold">Votre commande a été validée avec succès !</p>';
-                    totalPrice.textContent = '0€';
-                    showToast('Votre commande a été validée avec succès !');
-                } else {
-                    showToast('Trop de commandes en préparation, veuillez réessayer plus tard.');
-                }
-            } else {
-                showToast('Votre commande n\'a pas été validée.');
-            }
-        })
+async function confirmCart() {
+    const cart = Cart.getItems();
+    if (!cart || cart.length === 0) {
+        showToast('Le panier est vide');
+        return;
+    }
+
+    try {
+        const confirmed = await showConfirm('Êtes-vous sûr de vouloir valider votre panier ?');
+        if (!confirmed) {
+            showToast('Votre commande n\'a pas été validée.');
+            return;
+        }
+
+        if (countOrderInPreparation() > 5) {
+            showToast('Trop de commandes en préparation, veuillez réessayer plus tard.');
+            return;
+        }
+
+        const amount = totalPrice.textContent;
+        cartItems.innerHTML = '<p class="text-blue-600 font-semibold">Traitement du paiement en cours...</p>';
+
+        const paymentResult = await Payment.processPayment(amount);
+
+        await addOnHistory();
+        Cart.clearCart();
+        cartItems.innerHTML = '<p class="text-green-600 font-semibold">Votre commande a été validée avec succès !</p>';
+        totalPrice.textContent = '0€';
+        totalHT.textContent = '0€';
+        showToast('Paiement accepté ! Votre commande a été validée.');
+
+    } catch (error) {
+        cartItems.innerHTML = Cart.getItems().length ? '' : 'Votre panier est vide.';
+        loadCart();
+        showToast('Le paiement a échoué, veuillez réessayer.');
     }
 }
-
 
 async function addOnHistory() {
     const cart = localStorage.getItem('cart');
@@ -157,5 +176,17 @@ function removeItem() {
     Cart.removeItem(itemId);
     showToast(`Article ${itemId} retiré du panier`);
     loadCart();
+}
+
+clearCartButton.addEventListener('click', clearAllCart);
+
+function clearAllCart() {
+    showConfirm('Êtes-vous sûr de vouloir vider votre panier ?').then((confirmed) => {
+        if (confirmed) {
+            Cart.clearCart();
+            loadCart();
+            showToast('Votre panier a été vidé avec succès !');
+        }
+    });
 }
 
