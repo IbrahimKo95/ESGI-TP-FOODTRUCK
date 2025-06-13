@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Panier</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-100 ">
+    <nav class="bg-white shadow-md rounded-xl mx-4 mt-4 mb-6 px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-8">
+            <a href="index.html" class="text-xl font-bold text-gray-700 hover:text-blue-700 transition">Accueil</a>
+            <a href="cart.html" class="relative text-lg font-medium text-blue-700 hover:text-blue-900 transition">
+                Panier
+                <span id="cartIndicator" class="ml-1 inline-block bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full align-top">0</span>
+            </a>
+        </div>
+    </nav>
+    <div id="cartContainer" class="p-4">
+        <h1 class="text-3xl font-bold underline text-center mt-4 mb-5">Panier</h1>
+        <div id="cartItems" class="mt-4 gap-4 grid grid-cols-1">
+
+        </div>
+        <div class="mt-4 text-xl font-semibold">
+            <p>Total HT : <span id="totalHT"></span></p>
+            <p>Total TTC: <span id="totalPrice"></span></p>
+        </div>
+        <button id="confirmButton" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Valider la commande</button>
+
+    </div>
+    <div class="p-4 mt-8">
+        <h2 class="text-xl font-bold">Historique de commande</h2>
+        <div id="orderHistory" class="mt-4 grid grid-cols-1 gap-4">
+        </div>
+    </div>
+    <script src="cart.js" type="module"></script>
+</body>
+</html>
